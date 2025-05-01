@@ -26,29 +26,26 @@ dots = (202, 203, 179)
 dots_attack = (255, 0, 0)
 
 move_history = []
-# list contail all legal moves availabile for the selected peice
 legal_moves = []
-# currunt selected peice possion
 cur_piece = ()
-# True => white to play | False => Black to play
 turn = True
 
 def draw_board():
-    # drow the background of the board
+    """
+    Draws the chess board, pieces, and legal move indicators on the screen.
+    """
     for i in range(8):
         for j in range(8):
             if ((i + j) % 2 != 0):
                 pygame.draw.rect(screen, black, (i * 100, j * 100 , 100, 100))
             else:
                 pygame.draw.rect(screen, white, (i * 100, j * 100 , 100, 100))
-    # add the pieces to the board according to the board  2D array
     for i, rank in enumerate(board):
         for j, file in enumerate(rank):
             if file != '  ':
                 p = pygame.image.load(f"images/{file}.png")
                 p = pygame.transform.scale(p, (100, 100))
                 screen.blit(p, (j * 100, i * 100))
-    # add the legal moves dots on the board
     for i in legal_moves:
         if board[i[0]][i[1]] == '  ':
             pygame.draw.circle(screen, dots, (i[1] * 100 + 50, i[0] * 100 + 50), 12)
@@ -56,24 +53,28 @@ def draw_board():
             pygame.draw.circle(screen, dots_attack, (i[1] * 100 + 50, i[0] * 100 + 50), 12)
 
 def me():
-    if turn:
-        return 'w'
-    else:
-        return 'b'
+    """
+    Returns the current player's color: 'w' for white, 'b' for black.
+    """
+    return 'w' if turn else 'b'
 
 def opponent():
-    if turn:
-        return 'b'
-    else:
-        return 'w'
+    """
+    Returns the opponent's color: 'b' if white's turn, 'w' if black's turn.
+    """
+    return 'b' if turn else 'w'
 
-
-'''
-    pown_move function
-    input: pos => tuple represent the possion of the current pown
-    output: list represent all the legal moves for the current pown
-'''
 def pown_move(pos):
+    """
+    Returns all legal moves for a pawn at the given position.
+    Handles first move, captures, and forward movement.
+    
+    Args:
+        pos (tuple): The (row, col) position of the pawn.
+
+    Returns:
+        list of tuple: Legal move positions.
+    """
     def is_pawn_first_move(row):
         if me() == 'w' and row == 6:
             return True
@@ -83,11 +84,7 @@ def pown_move(pos):
     
     x, y = pos
     moves = []
-
-    if me() == 'w':
-        direction = -1
-    else:
-        direction = 1
+    direction = -1 if me() == 'w' else 1
 
     if 0 <= x + direction <= 7 and board[x + direction][y] == "  ":
         moves.append((x + direction, y))
@@ -100,12 +97,16 @@ def pown_move(pos):
     
     return moves
 
-'''
-    rook_move function
-    input: pos => tuple represent the possion of the current rook
-    output: list represent all the legal moves for the current rook
-'''
 def rook_move(pos):
+    """
+    Returns all legal moves for a rook at the given position.
+    
+    Args:
+        pos (tuple): The (row, col) position of the rook.
+
+    Returns:
+        list of tuple: Legal move positions.
+    """
     moves = []
     x, y = pos
     rook_moves = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -125,12 +126,16 @@ def rook_move(pos):
                 ny += j
     return moves
 
-'''
-    knight_move function
-    input: pos => tuple represent the possion of the current knight
-    output: list represent all the legal moves for the current knight
-'''
 def knight_move(pos):
+    """
+    Returns all legal moves for a knight at the given position.
+    
+    Args:
+        pos (tuple): The (row, col) position of the knight.
+
+    Returns:
+        list of tuple: Legal move positions.
+    """
     moves = []
     knight_moves = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
     
@@ -143,12 +148,16 @@ def knight_move(pos):
     
     return moves
 
-'''
-    bishop_move function
-    input: pos => tuple represent the possion of the current bishop
-    output: list represent all the legal moves for the current bishop
-'''
 def bishop_move(pos):
+    """
+    Returns all legal moves for a bishop at the given position.
+    
+    Args:
+        pos (tuple): The (row, col) position of the bishop.
+
+    Returns:
+        list of tuple: Legal move positions.
+    """
     moves = []
     x, y = pos
     bishop_moves = [(1, 1), (-1, -1), (-1, 1), (1, -1)]
@@ -168,20 +177,29 @@ def bishop_move(pos):
                 ny += j
     return moves
 
-'''
-    queen_move function
-    input: pos => tuple represent the possion of the current queen
-    output: list represent all the legal moves for the current queen
-'''
 def queen_move(pos):
+    """
+    Returns all legal moves for a queen at the given position.
+    Combines rook and bishop moves.
+    
+    Args:
+        pos (tuple): The (row, col) position of the queen.
+
+    Returns:
+        list of tuple: Legal move positions.
+    """
     return rook_move(pos) + bishop_move(pos)
 
-'''
-    king_move function
-    input: pos => tuple represent the possion of the current king
-    output: list represent all the legal moves for the current king
-'''
-def king_move(pos):        
+def king_move(pos):    
+    """
+    Returns all legal moves for a king at the given position, including castling if available.
+    
+    Args:
+        pos (tuple): The (row, col) position of the king.
+
+    Returns:
+        list of tuple: Legal move positions.
+    """    
     moves = []
     king_moves =[(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
     
@@ -206,6 +224,13 @@ def king_move(pos):
     return moves
 
 def castling(pos, type):
+    """
+    Executes castling move for the king and rook.
+
+    Args:
+        pos (tuple): King's starting position.
+        type (str): Either 'short' or 'long' for castling side.
+    """
     global legal_moves, turn
     x = pos[0]
     if type == 'short':
@@ -221,8 +246,14 @@ def castling(pos, type):
     legal_moves = [] 
     turn = not turn  
 
-
 def move(start_pos, end_pos):
+    """
+    Moves a piece from start_pos to end_pos and handles pawn promotion.
+
+    Args:
+        start_pos (tuple): Starting square.
+        end_pos (tuple): Target square.
+    """
     global legal_moves, turn
     if board[start_pos[0]][start_pos[1]] == 'wp' and end_pos[0] == 0:  
         board[end_pos[0]][end_pos[1]] = 'wq'
@@ -235,6 +266,15 @@ def move(start_pos, end_pos):
     turn = not turn  
 
 def make_legal_moves(pos):
+    """
+    Dispatches move generation for the selected piece.
+
+    Args:
+        pos (tuple): Position of the selected piece.
+
+    Returns:
+        list of tuple: Legal moves.
+    """
     x, y = pos
     if board[x][y] == me() + 'p':
         return pown_move(cur_piece)
@@ -250,12 +290,18 @@ def make_legal_moves(pos):
         return knight_move(cur_piece)
 
 def undo():
+    """
+    Undoes the last move by restoring the previous board state.
+    """
     global turn, board
     if move_history:
         turn = not turn
         board = move_history.pop()  
 
 def copy_board():
+    """
+    Copies the current board state and appends it to move history.
+    """
     global board, move_history
     new_board = []
     for i in board:
