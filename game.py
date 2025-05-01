@@ -25,6 +25,7 @@ black = (115, 149, 82)
 dots = (202, 203, 179)
 dots_attack = (255, 0, 0)
 
+move_history = []
 # list contail all legal moves availabile for the selected peice
 legal_moves = []
 # currunt selected peice possion
@@ -247,13 +248,29 @@ def make_legal_moves(pos):
         return bishop_move(cur_piece)
     elif board[x][y] == me() + 'n':
         return knight_move(cur_piece)
-    
+
+def undo():
+    global turn, board
+    if move_history:
+        turn = not turn
+        board = move_history.pop()  
+
+def copy_board():
+    global board, move_history
+    new_board = []
+    for i in board:
+        new_board.append(i.copy())
+    move_history.append(new_board)
+
+
 # main gui loop
 while True:
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             quit()
-        if e.type == pygame.MOUSEBUTTONDOWN:
+        elif e.type == pygame.KEYDOWN and e.key == pygame.K_UP:
+            undo()
+        elif e.type == pygame.MOUSEBUTTONDOWN:
             y ,x = e.pos
             x //= 100
             y //= 100
@@ -262,6 +279,7 @@ while True:
                 legal_moves = make_legal_moves((x,y))
             else: 
                 if (x, y) in legal_moves:
+                    copy_board()
                     if board[cur_piece[0]][cur_piece[1]] in ('wk', 'bk'):
                         if (x, y) in [(7, 2), (0, 2)]:
                             castling(cur_piece, 'long')
