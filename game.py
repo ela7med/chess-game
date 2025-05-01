@@ -2,9 +2,12 @@ import pygame
 
 # pygame module initiolization
 pygame.init()
+pygame.mixer.init()
 
+sound = pygame.mixer.Sound("chess_move.wav")
 # make 800 * 800 window
 screen = pygame.display.set_mode((800, 800))
+pygame.display.set_caption("Chess Game")
 
 
 # main chess board 
@@ -325,6 +328,7 @@ while True:
                 legal_moves = make_legal_moves((x,y))
             else: 
                 if (x, y) in legal_moves:
+                    sound.play()
                     copy_board()
                     if board[cur_piece[0]][cur_piece[1]] in ('wk', 'bk'):
                         if (x, y) in [(7, 2), (0, 2)]:
