@@ -2,11 +2,11 @@ import pygame
 
 # pygame module initiolization
 pygame.init()
-pygame.mixer.init()
 
 sound = pygame.mixer.Sound("chess_move.wav")
 # make 800 * 800 window
 screen = pygame.display.set_mode((800, 800))
+# make window caption
 pygame.display.set_caption("Chess Game")
 
 
@@ -39,33 +39,50 @@ def draw_board():
     """
     for i in range(8):
         for j in range(8):
-            if ((i + j) % 2 != 0):
-                pygame.draw.rect(screen, black, (i * 100, j * 100 , 100, 100))
+            if (i + j) % 2 == 0:
+                pygame.draw.rect(screen, white, (i * 100, j * 100, 100, 100))
             else:
-                pygame.draw.rect(screen, white, (i * 100, j * 100 , 100, 100))
-    for i, rank in enumerate(board):
-        for j, file in enumerate(rank):
-            if file != '  ':
-                p = pygame.image.load(f"images/{file}.png")
-                p = pygame.transform.scale(p, (100, 100))
-                screen.blit(p, (j * 100, i * 100))
-    for i in legal_moves:
-        if board[i[0]][i[1]] == '  ':
-            pygame.draw.circle(screen, dots, (i[1] * 100 + 50, i[0] * 100 + 50), 12)
-        else:
-            pygame.draw.circle(screen, dots_attack, (i[1] * 100 + 50, i[0] * 100 + 50), 12)
+                pygame.draw.rect(screen, black, (i * 100, j * 100, 100, 100))
+    
+    for i in range(8):
+        font = pygame.font.SysFont('arial', 18)
+        num = font.render(f"{8 - i}", True, (0, 0, 0))
+        screen.blit(num, (5, i * 100 + 5))
+    
+    for i, j in enumerate('abcdefgh'):
+        font = pygame.font.SysFont('arial', 18)
+        letter = font.render(f"{j}", True, (0, 0, 0))
+        screen.blit(letter, (i * 100 + 5, 795 - 18))
 
+    for i, rank in enumerate(board):
+        for j, peice in enumerate(rank):
+            if peice != '  ':
+                img = pygame.image.load(f'images/{peice}.png')
+                img = pygame.transform.scale(img, (100, 100))
+                screen.blit(img, (j * 100, i * 100))
+
+    for i ,j in legal_moves:
+        if board[i][j] == '  ':
+            pygame.draw.circle(screen, dots, (j * 100 + 50, i * 100 + 50), 12)
+        else:
+            pygame.draw.circle(screen, dots_attack, (j * 100 + 50, i * 100 + 50), 12)
 def me():
     """
     Returns the current player's color: 'w' for white, 'b' for black.
     """
-    return 'w' if turn else 'b'
+    if turn:
+        return 'w'
+    else:
+        return 'b'
 
 def opponent():
     """
     Returns the opponent's color: 'b' if white's turn, 'w' if black's turn.
     """
-    return 'b' if turn else 'w'
+    if turn:
+        return 'b'
+    else:
+        return 'w'
 
 def pown_move(pos):
     """
@@ -87,7 +104,10 @@ def pown_move(pos):
     
     x, y = pos
     moves = []
-    direction = -1 if me() == 'w' else 1
+    if me() == 'w':
+        direction = -1 
+    else:
+        direction = 1
 
     if 0 <= x + direction <= 7 and board[x + direction][y] == "  ":
         moves.append((x + direction, y))
@@ -205,6 +225,7 @@ def king_move(pos):
     """    
     moves = []
     king_moves =[(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
+
     
     for i, j in king_moves:
         x = pos[0] + i
@@ -333,7 +354,6 @@ while True:
                     if board[cur_piece[0]][cur_piece[1]] in ('wk', 'bk'):
                         if (x, y) in [(7, 2), (0, 2)]:
                             castling(cur_piece, 'long')
-                            continue
                         elif (x, y) in [(7, 6), (0, 6)]:
                             castling(cur_piece, 'short')
                         else:
