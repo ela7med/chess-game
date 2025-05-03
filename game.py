@@ -32,6 +32,11 @@ move_history = []
 legal_moves = []
 cur_piece = ()
 turn = True
+is_short_white_castling_valid = True
+is_long_white_castling_valid = True
+is_short_black_castling_valid = True
+is_long_black_castling_valid = True
+
 
 def draw_board():
     """
@@ -235,16 +240,15 @@ def king_move(pos):
                 moves.append((x, y))
 
     if me() == 'w' and pos == (7, 4):
-        if board[7][0] == 'wr' and board[7][1] == board[7][2] == board[7][3] == '  ':
+        if board[7][0] == 'wr' and board[7][1] == board[7][2] == board[7][3] == '  ' and is_long_white_castling_valid:
             moves.append((7, 2))
-        if board[7][7] == 'wr' and board[7][5] == board[7][6] == '  ':
+        if board[7][7] == 'wr' and board[7][5] == board[7][6] == '  ' and is_short_white_castling_valid:
             moves.append((7, 6))
     elif me() == 'b' and pos == (0, 4):
-        if board[0][0] == 'br' and board[0][1] == board[0][2] == board[0][3] == '  ':
+        if board[0][0] == 'br' and board[0][1] == board[0][2] == board[0][3] == '  ' and is_long_black_castling_valid:
             moves.append((0, 2))
-        if board[0][7] == 'br' and board[0][5] == board[0][6] == '  ':
+        if board[0][7] == 'br' and board[0][5] == board[0][6] == '  ' and is_short_black_castling_valid:
             moves.append((0, 6))
-
     return moves
 
 def castling(pos, type):
@@ -358,7 +362,23 @@ while True:
                             castling(cur_piece, 'short')
                         else:
                             move(cur_piece, (x, y))
-                    else:
+                        if me() == 'b':
+                            is_long_white_castling_valid = False
+                            is_short_white_castling_valid = False
+                        else:
+                            is_long_black_castling_valid = False
+                            is_short_black_castling_valid = False
+                    else: 
+                        if board[cur_piece[0]][cur_piece[1]] == 'wr':
+                            if cur_piece == (7, 7):
+                                is_short_white_castling_valid = False
+                            elif cur_piece == (7, 0):
+                                is_long_white_castling_valid = False
+                        elif board[cur_piece[0]][cur_piece[1]] == 'br':
+                            if cur_piece == (0, 7):
+                                is_short_black_castling_valid = False
+                            elif cur_piece == (0, 0):
+                                is_long_black_castling_valid = False
                         move(cur_piece, (x, y))
                 else:
                     legal_moves = []   
